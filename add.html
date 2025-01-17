@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新增成員</title>
+</head>
+<body>
+  <h1>新增成員</h1>
+  
+  <form id="addMemberForm">
+    <label for="memberName">姓名：</label>
+    <input type="text" id="memberName" required><br>
+    
+    <label for="memberAge">年齡：</label>
+    <input type="number" id="memberAge" required><br>
+    
+    <label for="memberEmail">電子郵件：</label>
+    <input type="email" id="memberEmail" required><br>
+    
+    <button type="submit">新增</button>
+  </form>
+  
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.5.3/dist/web3.min.js"></script>
+  <script>
+    // 網頁載入完成後執行程式碼
+    window.addEventListener('load', async () => {
+      // 檢查 MetaMask 是否已安裝
+      if (typeof window.ethereum !== 'undefined') {
+        // 請求使用者授權連線到以太坊
+        await window.ethereum.enable();
+        
+        // 建立 Web3 實例
+        const web3 = new Web3(window.ethereum);
+        
+        // 取得合約地址
+        const contractAddress = 'contractAddress';
+        
+        // 取得合約 ABI，這裡需要根據您的合約定義進行設定
+        const ABI = [
+          // 合約方法和事件的定義
+          // ...
+        ];
+        
+        // 建立合約實例
+        const contract = new web3.eth.Contract(ABI, contractAddress);
+        
+        // 監聽提交表單的事件
+        document.getElementById('addMemberForm').addEventListener('submit', async (event) => {
+          event.preventDefault();
+          
+          // 取得表單中的資料
+          const memberName = document.getElementById('memberName').value;
+          const memberAge = document.getElementById('memberAge').value;
+          const memberEmail = document.getElementById('memberEmail').value;
+          
+          try {
+            // 根據私鑰建立交易
+            const privateKey = '0xprivateKey';
+            const addMemberTransaction = contract.methods.addMember(memberName, memberAge, memberEmail);
+            
+            // 估算交易成本
+            const gas = await addMemberTransaction.estimateGas();
+            
+            // 建構交易物件
+            const transactionObject = {
+              to: contractAddress,
+              data: addMemberTransaction.encodeABI(),
+              gas,
+            };
+            
+            // 簽署交易
+            const signedTx = await web3.eth.accounts.signTransaction(transactionObject, privateKey);
+            
+            // 發送簽署的交易
+            const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+            
+            // 成功接收到交易收據後，可確認交易已被記錄在區塊鏈上
+            console.log('交易已成功：', receipt);
+          } catch (error) {
+            console.error('執行交易時發生錯誤：', error);
+          }
+        });
+      } else {
+        console.error('請安裝 MetaMask 擴充套件');
+      }
+    });
+  </script>
+</body>
+</html>
